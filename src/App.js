@@ -10,16 +10,25 @@ class App extends React.Component {
     super();
     this.state = {
       products: data.products,
-      cartItems: [],
+      cartItems: localStorage.getItem("cartItems")
+        ? JSON.parse(localStorage.getItem("cartItems"))
+        : [],
       size: "",
       sort: "",
     };
   }
+  createOrder = (order) => {
+    alert("Need to save order for " + order.name);
+  };
   removeFromCart = (product) => {
     const cartItems = this.state.cartItems.slice();
     this.setState({
       cartItems: cartItems.filter((x) => x._id !== product._id),
     });
+    localStorage.setItem(
+      "cartItems",
+      JSON.stringify(cartItems.filter((x) => x._id !== product._id))
+    );
   };
   addToCart = (product) => {
     const cartItems = this.state.cartItems.slice();
@@ -34,10 +43,10 @@ class App extends React.Component {
       cartItems.push({ ...product, count: 1 });
     }
     this.setState({ cartItems });
+    localStorage.setItem("cartItems", JSON.stringify(cartItems));
   };
-
   sortProducts = (event) => {
-    //impl
+    // impl
     const sort = event.target.value;
     console.log(event.target.value);
     this.setState((state) => ({
@@ -59,12 +68,11 @@ class App extends React.Component {
         ),
     }));
   };
-
   filterProducts = (event) => {
-    //impl
+    // impl
     console.log(event.target.value);
     if (event.target.value === "") {
-      this.setState({ size: event.target.value, product: data.products });
+      this.setState({ size: event.target.value, products: data.products });
     } else {
       this.setState({
         size: event.target.value,
@@ -74,12 +82,11 @@ class App extends React.Component {
       });
     }
   };
-
   render() {
     return (
       <div className="grid-container">
         <header>
-          <a href="/"> React Shopping Cart</a>
+          <a href="/">React Shopping Cart</a>
         </header>
         <main>
           <div className="content">
@@ -100,6 +107,7 @@ class App extends React.Component {
               <Cart
                 cartItems={this.state.cartItems}
                 removeFromCart={this.removeFromCart}
+                createOrder={this.createOrder}
               />
             </div>
           </div>
