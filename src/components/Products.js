@@ -66,7 +66,7 @@ class Products extends Component {
                 <img src={product.image} alt={product.title}></img>
                 <div className="product-details-description">
                   <p>
-                    <strong> {product.title} </strong>
+                    <strong>{product.title}</strong>
                   </p>
                   <p>{product.description}</p>
                   <p>
@@ -74,7 +74,7 @@ class Products extends Component {
                     {product.availableSizes.map((x) => (
                       <span>
                         {" "}
-                        <button className="button"> {x} </button>
+                        <button className="button">{x}</button>
                       </span>
                     ))}
                   </p>
@@ -92,7 +92,6 @@ class Products extends Component {
                   </div>
                 </div>
               </div>
-              <div>Modal</div>
             </Zoom>
           </Modal>
         )}
@@ -100,7 +99,9 @@ class Products extends Component {
     );
   }
 }
-
-export default connect((state) => ({ products: state.products.items }), {
-  fetchProducts,
-})(Products);
+export default connect(
+  (state) => ({ products: state.products.filteredItems }),
+  {
+    fetchProducts,
+  }
+)(Products);
