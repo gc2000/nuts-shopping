@@ -1,62 +1,142 @@
 import React, { Component } from "react";
+import formatCurrency from "../util";
+import Fade from "react-reveal/Fade";
 import { connect } from "react-redux";
-import { filterProducts, sortProducts } from "../actions/productActions";
+import { removeFromCart } from "../actions/cartActions";
 
-class Filter extends Component {
+class Cart extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      name: "",
+      email: "",
+      address: "",
+      showCheckout: false,
+    };
+  }
+  handleInput = (e) => {
+    this.setState({ [e.target.name]: e.target.value });
+  };
+  createOrder = (e) => {
+    e.preventDefault();
+    const order = {
+      name: this.state.name,
+      email: this.state.email,
+      address: this.state.address,
+      cartItems: this.props.cartItems,
+    };
+    this.props.createOrder(order);
+  };
   render() {
-    return !this.props.filteredProducts ? (
-      <div>Loading...</div>
-    ) : (
-      <div className="filter">
-        <div className="filter-result">
-          {this.props.filteredProducts.length} Products
-        </div>
-        <div className="filter-sort">
-          Order{" "}
-          <select
-            value={this.props.sort}
-            onChange={(e) =>
-              this.props.sortProducts(
-                this.props.filteredProducts,
-                e.target.value
-              )
-            }
-          >
-            <option value="latest">Latest</option>
-            <option value="lowest">Lowest</option>
-            <option value="highest">Highest</option>
-          </select>
-        </div>
-        <div className="filter-size">
-          Filter{" "}
-          <select
-            value={this.props.size}
-            onChange={(e) =>
-              this.props.filterProducts(this.props.products, e.target.value)
-            }
-          >
-            <option value="">ALL</option>
-            <option value="XS">XS</option>
-            <option value="S">S</option>
-            <option value="M">M</option>
-            <option value="L">L</option>
-            <option value="XL">XL</option>
-            <option value="XXL">XXL</option>
-          </select>
+    const { cartItems } = this.props;
+    return (
+      <div>
+        {cartItems.length === 0 ? (
+          <div className="cart cart-header">Cart is empty</div>
+        ) : (
+          <div className="cart cart-header">
+            You have {cartItems.length} in the cart{" "}
+          </div>
+        )}
+        <div>
+          <div className="cart">
+            <Fade left cascade>
+              <ul className="cart-items">
+                {cartItems.map((item) => (
+                  <li key={item._id}>
+                    <div>
+                      <img src={item.image} alt={item.title}></img>
+                    </div>
+                    <div>
+                      <div>{item.title}</div>
+                      <div className="right">
+                        {formatCurrency(item.price)} x {item.count}{" "}
+                        <button
+                          className="button"
+                          onClick={() => this.props.removeFromCart(item)}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </Fade>
+          </div>
+          {cartItems.length !== 0 && (
+            <div>
+              <div className="cart">
+                <div className="total">
+                  <div>
+                    Total:{" "}
+                    {formatCurrency(
+                      cartItems.reduce((a, c) => a + c.price * c.count, 0)
+                    )}
+                  </div>
+                  <button
+                    onClick={() => {
+                      this.setState({ showCheckout: true });
+                    }}
+                    className="button primary"
+                  >
+                    Proceed
+                  </button>
+                </div>
+              </div>
+              {this.state.showCheckout && (
+                <Fade right cascade>
+                  <div className="cart">
+                    <form onSubmit={this.createOrder}>
+                      <ul className="form-container">
+                        <li>
+                          <label>Email</label>
+                          <input
+                            name="email"
+                            type="email"
+                            required
+                            onChange={this.handleInput}
+                          ></input>
+                        </li>
+                        <li>
+                          <label>Name</label>
+                          <input
+                            name="name"
+                            type="text"
+                            required
+                            onChange={this.handleInput}
+                          ></input>
+                        </li>
+                        <li>
+                          <label>Address</label>
+                          <input
+                            name="address"
+                            type="text"
+                            required
+                            onChange={this.handleInput}
+                          ></input>
+                        </li>
+                        <li>
+                          <button className="button primary" type="submit">
+                            Checkout
+                          </button>
+                        </li>
+                      </ul>
+                    </form>
+                  </div>
+                </Fade>
+              )}
+            </div>
+          )}
         </div>
       </div>
     );
   }
 }
+
 export default connect(
   (state) => ({
-    size: state.products.size,
-    sort: state.products.sort,
-    products: state.products.items,
-    filteredProducts: state.products.filteredItems,
+    cartItems: state.cart.cartItems,
   }),
-  {
-    filterProducts,
-    sortProducts,
-  }
-)(Filter);
+  { removeFromCart }
+)(Cart);
